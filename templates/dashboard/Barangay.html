@@ -220,7 +220,6 @@
             }
 
             function updateRoadCharts(data) {
-                // FIXED: Use SARIMA broadcast keys
                 const fullText = data.full_year || "2023 Full Year: 50.0% Risk";
                 const monthlyText = data.monthly || "2023 Monthly: 60.0% Risk";
                 const julDecText = data.jul_dec || "July-Dec 2023: 70.0% Risk";
@@ -470,8 +469,8 @@
 
             
 
-            // Listener for ARIMAX updates (live, no refresh)
-            socket.on('update_sarimax_charts', updateRoadCharts);
+            // Primary listener for SARIMA updates (live, no refresh)
+            socket.on('update_sarima_charts', updateRoadCharts);
 
 
             

@@ -176,12 +176,12 @@ def handle_barangay_response_submitted(data):
 
     # === 5. Broadcast both predictions live to all dashboards ===
     emit('update_prediction_charts', {
-        'full_yearx': full_year_text,
-        'monthlyx': monthly_text,
-        'jul_decx': jul_dec_text
+        'full_year': full_year_text,
+        'monthly': monthly_text,
+        'jul_dec': jul_dec_text
     }, broadcast=True)
 
-    logger.info(f"Live update of ARIMAX prediction sent → Full: {full_year_text} | Monthly: {monthly_text} | Jul-Dec: {jul_dec_text}")
+    logger.info(f"Live update of ARIMA prediction sent → Full: {full_year_text} | Monthly: {monthly_text} | Jul-Dec: {jul_dec_text}")
 
 # === ARIMAX Handler (used first) ===
 def handle_barangay_arimax_submitted(data):
