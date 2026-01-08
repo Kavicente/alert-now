@@ -418,7 +418,7 @@ def handle_barangay_sarima_submitted(data):
     barangay_room = f"barangay_{data.get('barangay', 'unknown').lower()}"
     emit('barangay_sarima_submitted', data, room=barangay_room)
 
-    # === 5. Broadcast ARIMAX predictions ===
+    # === 5. Broadcast SARIMA predictions (same keys as before) ===
     emit('update_sarima_charts', {
         'full_year': sarima_full_text,
         'monthly': sarima_monthly_text,

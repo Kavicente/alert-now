@@ -199,7 +199,7 @@
             let monthlyComparisonChart = null;
             let julDecChart = null;
 
-            // FIRE INCIDENT CHARTS
+            // FIRE INCIDENT CHARTS (kept but not updated by SARIMA)
             let fireYearlyChart = null;
             let fireMonthlyChart = null;
             let fireJulDecChart = null;
@@ -220,7 +220,7 @@
             }
 
             function updateRoadCharts(data) {
-                // FIXED: Correct keys from SARIMA broadcast
+                // FIXED: Use SARIMA broadcast keys
                 const fullText = data.full_year || "2023 Full Year: 50.0% Risk";
                 const monthlyText = data.monthly || "2023 Monthly: 60.0% Risk";
                 const julDecText = data.jul_dec || "July-Dec 2023: 70.0% Risk";
@@ -231,19 +231,19 @@
                 const monthly2023Count = Math.round((monthly / 100) * 150);
                 const julDec2023Count = Math.round((julDec / 100) * 90);
 
-                // yearlyPredictionChart - DISPLAY % & MOVE LINE (VARIES EACH TIME)
+                // yearlyPredictionChart - DISPLAY % & MOVE LINE
                 if (yearlyPredictionChart) {
-                    yearlyPredictionChart.data.datasets[0].data[3] = full2023Count + Math.round(random(-5, 5)); // Extra small random for visual change
+                    yearlyPredictionChart.data.datasets[0].data[3] = full2023Count;
                     yearlyPredictionChart.options.plugins.title.text = fullText;
                     yearlyPredictionChart.update('active');
                 }
 
-                // monthlyComparisonChart - DISPLAY % & MOVE LINE (VARIES EACH TIME)
+                // monthlyComparisonChart - DISPLAY % & MOVE LINE
                 if (monthlyComparisonChart) {
                     const base2022 = [28,32,35,30,40,38,42,45,41,36,33,30];
                     const monthly2023 = base2022.map(v => {
                         const ratio = monthly2023Count / 92;
-                        const variation = random(-12, 15); // Random every time
+                        const variation = random(-12, 15);
                         return Math.max(0, Math.round(v * ratio + variation));
                     });
                     monthlyComparisonChart.data.datasets[1].data = monthly2023;
@@ -251,12 +251,12 @@
                     monthlyComparisonChart.update('active');
                 }
 
-                // julDecChart - DISPLAY % & MOVE LINE (VARIES EACH TIME)
+                // julDecChart - DISPLAY % & MOVE LINE
                 if (julDecChart) {
                     const baseJulDec2022 = [42,45,41,36,33,30];
                     const forecastJulDec = baseJulDec2022.map(v => {
                         const ratio = julDec2023Count / 75;
-                        const variation = random(-15, 18); // Random every time
+                        const variation = random(-15, 18);
                         return Math.max(0, Math.round(v * ratio + variation));
                     });
                     julDecChart.data.datasets[1].data = [null,null,null,null,null,null,...forecastJulDec];
@@ -447,23 +447,7 @@
                     }
                 });
 
-                // Initial load (fallback - optional, can be removed if SARIMA is the only model)
-                fetch('/get_latest_prediction')
-                    .then(r => r.json())
-                    .then(d => {
-                        const pred = d.prediction || "2023 Full Year: 50.0% Risk | 2023 Monthly: 60.0% Risk | July-Dec 2023: 70.0% Risk";
-                        const [full, monthly, julDec] = pred.split('|').map(s => s.trim());
-                        updateRoadCharts({ full_year: full, monthly: monthly, jul_dec: julDec });
-                    });
-
-                // Initial load from Fire prediction
-                fetch('/get_latest_fire_prediction')
-                    .then(r => r.json())
-                    .then(d => {
-                        const pred = d.prediction || "Fire 2023 Full Year: 50.0% Risk | Fire 2023 Monthly: 60.0% Risk | Fire July-Dec 2023: 70.0% Risk";
-                        const [full, monthly, jul] = pred.split('|').map(s => s.trim());
-                        updateFireCharts({ fire_full: full, fire_monthly: monthly, fire_jul_dec: jul });
-                    });
+                
             }
 
             
