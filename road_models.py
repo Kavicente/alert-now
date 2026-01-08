@@ -96,11 +96,11 @@ sarima_pred = None
 try:
     sarima_pred = joblib.load(os.path.join(os.path.dirname(__file__), 'training', 'Road Models', 
                                           'SARIMA ROAD', 'sarima_pred', 'sarima70_15_15.pkl'))
-    logger.info("sarima80_20.pkl loaded successfully.")
+    logger.info("sarima70_15_15.pkl loaded successfully.")
 except FileNotFoundError:
-    logger.error("sarima80_20.pkl not found.")
+    logger.error("sarima70_15_15.pkl not found.")
 except Exception as e:
-    logger.error(f"Error loading sarima80_20.pkl: {e}")
+    logger.error(f"Error loading sarima70_15_15.pkl: {e}")
     
 #SARIMAX MODEL
 

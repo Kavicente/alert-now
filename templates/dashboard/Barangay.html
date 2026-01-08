@@ -450,12 +450,28 @@
                 
             }
 
-            
+            // Initial load (fallback - optional, can be removed if SARIMA is the only model)
+                fetch('/get_latest_prediction')
+                    .then(r => r.json())
+                    .then(d => {
+                        const pred = d.prediction || "2023 Full Year: 50.0% Risk | 2023 Monthly: 60.0% Risk | July-Dec 2023: 70.0% Risk";
+                        const [full, monthly, julDec] = pred.split('|').map(s => s.trim());
+                        updateRoadCharts({ full_year: full, monthly: monthly, jul_dec: julDec });
+                    });
+
+                // Initial load from Fire prediction
+                fetch('/get_latest_fire_prediction')
+                    .then(r => r.json())
+                    .then(d => {
+                        const pred = d.prediction || "Fire 2023 Full Year: 50.0% Risk | Fire 2023 Monthly: 60.0% Risk | Fire July-Dec 2023: 70.0% Risk";
+                        const [full, monthly, julDec] = pred.split('|').map(s => s.trim());
+                        updateFireCharts({ fire_full: full, fire_monthly: monthly, fire_jul_dec: julDec });
+                    });
 
             
 
             // Listener for ARIMAX updates (live, no refresh)
-            socket.on('update_sarima_charts', updateRoadCharts);
+            socket.on('update_sarimax_charts', updateRoadCharts);
 
 
             
@@ -590,7 +606,7 @@
             
 
              // Update prediction display after submission
-            socket.on('barangay_sarima_submitted', () => {
+            socket.on('barangay_sarimax_submitted', () => {
                 fetch('/get_latest_prediction')
                     .then(r => r.json())
                     .then(data => updateChartsFromPrediction(data.prediction));
