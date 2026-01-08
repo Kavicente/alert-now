@@ -75,7 +75,7 @@ except Exception as e:
 sarima_m = None
 try:
     sarima_m = joblib.load(os.path.join(os.path.dirname(__file__), 'training', 'Road Models', 
-                                       'SARIMA ROAD', 'sarima_monthly', 'monthly_sarima70_15_15.pkl'))
+                                       'SARIMA ROAD', 'sarima_monthly', 'monthly_sarima70_30.pkl'))
     logger.info("monthly_sarima70_15_15.pkl loaded successfully.")
 except FileNotFoundError:
     logger.error("monthly_sarima70_15_15.pkl not found.")
@@ -85,7 +85,7 @@ except Exception as e:
 sarima_22 = None
 try:
     sarima_22 = joblib.load(os.path.join(os.path.dirname(__file__), 'training', 'Road Models', 
-                                        'SARIMA ROAD', 'sarima_forecast', 'sarima_forecast_70_15_15.pkl'))
+                                        'SARIMA ROAD', 'sarima_forecast', 'sarima_forecast_70_30.pkl'))
     logger.info("sarima_forecast_70_15_15.pkl loaded successfully.")
 except FileNotFoundError:
     logger.error("sarima_forecast_70_15_15.pkl not found.")
@@ -95,7 +95,7 @@ except Exception as e:
 sarima_pred = None
 try:
     sarima_pred = joblib.load(os.path.join(os.path.dirname(__file__), 'training', 'Road Models', 
-                                          'SARIMA ROAD', 'sarima_pred', 'sarima70_15_15.pkl'))
+                                          'SARIMA ROAD', 'sarima_pred', 'sarima70_30.pkl'))
     logger.info("sarima70_15_15.pkl loaded successfully.")
 except FileNotFoundError:
     logger.error("sarima70_15_15.pkl not found.")
