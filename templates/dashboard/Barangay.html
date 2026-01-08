@@ -226,23 +226,34 @@
 
                 const { full, monthly, julDec } = parsePrediction(fullText, monthlyText, julDecText);
 
-                const full2023Count = Math.round((full / 100) * 150);
-                const monthly2023Count = Math.round((monthly / 100) * 150);
-                const julDec2023Count = Math.round((julDec / 100) * 90);
+                // Base counts from model
+                let full2023Count = Math.round((full / 100) * 150);
+                let monthly2023Count = Math.round((monthly / 100) * 150);
+                let julDec2023Count = Math.round((julDec / 100) * 90);
 
-                // yearlyPredictionChart
+                // STRONG EXTRA RANDOM VARIATION TO PREVENT "STUCK" FEEL
+                full2023Count += Math.round(random(-12, 15));      // ±12-15 for yearly point — visible jump
+                monthly2023Count += Math.round(random(-15, 18));   // ±15-18 for monthly base
+                julDec2023Count += Math.round(random(-18, 20));    // ±18-20 for Jul-Dec base
+
+                // Keep within reasonable bounds
+                full2023Count = Math.max(60, Math.min(180, full2023Count));
+                monthly2023Count = Math.max(70, Math.min(170, monthly2023Count));
+                julDec2023Count = Math.max(50, Math.min(130, julDec2023Count));
+
+                // yearlyPredictionChart - NOW MOVES VISIBLY EVERY SUBMISSION
                 if (yearlyPredictionChart) {
                     yearlyPredictionChart.data.datasets[0].data[3] = full2023Count;
                     yearlyPredictionChart.options.plugins.title.text = fullText;
                     yearlyPredictionChart.update('active');
                 }
 
-                // monthlyComparisonChart
+                // monthlyComparisonChart - LINES WIGGLE MORE
                 if (monthlyComparisonChart) {
                     const base2022 = [28,32,35,30,40,38,42,45,41,36,33,30];
                     const monthly2023 = base2022.map(v => {
                         const ratio = monthly2023Count / 92;
-                        const variation = random(-12, 15);
+                        const variation = random(-18, 22);  // Increased range for more movement
                         return Math.max(0, Math.round(v * ratio + variation));
                     });
                     monthlyComparisonChart.data.datasets[1].data = monthly2023;
@@ -250,12 +261,12 @@
                     monthlyComparisonChart.update('active');
                 }
 
-                // julDecChart
+                // julDecChart - LINES WIGGLE MORE
                 if (julDecChart) {
                     const baseJulDec2022 = [42,45,41,36,33,30];
                     const forecastJulDec = baseJulDec2022.map(v => {
                         const ratio = julDec2023Count / 75;
-                        const variation = random(-15, 18);
+                        const variation = random(-20, 25);  // Increased range for more movement
                         return Math.max(0, Math.round(v * ratio + variation));
                     });
                     julDecChart.data.datasets[1].data = [null,null,null,null,null,null,...forecastJulDec];
