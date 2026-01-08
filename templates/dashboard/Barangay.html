@@ -194,6 +194,31 @@
 
             
 
+            // ROAD ACCIDENT CHARTS
+            let yearlyPredictionChart = null;
+            let monthlyComparisonChart = null;
+            let julDecChart = null;
+
+            // FIRE INCIDENT CHARTS
+            let fireYearlyChart = null;
+            let fireMonthlyChart = null;
+            let fireJulDecChart = null;
+
+            function random(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            function parsePrediction(full, monthly, julDec) {
+                const fullMatch = full.match(/(\d+\.\d+)%/);
+                const monthlyMatch = monthly.match(/(\d+\.\d+)%/);
+                const julDecMatch = julDec.match(/(\d+\.\d+)%/);
+                return {
+                    full: fullMatch ? parseFloat(fullMatch[1]) : 50,
+                    monthly: monthlyMatch ? parseFloat(monthlyMatch[1]) : 60,
+                    julDec: julDecMatch ? parseFloat(julDecMatch[1]) : 70
+                };
+            }
+
             function updateRoadCharts(data) {
                 const fullText = data.full_year || "2023 Full Year: 50.0% Risk";
                 const monthlyText = data.monthly || "2023 Monthly: 60.0% Risk";
@@ -205,16 +230,14 @@
                 const monthly2023Count = Math.round((monthly / 100) * 150);
                 const julDec2023Count = Math.round((julDec / 100) * 90);
 
-                // yearlyPredictionChart - VISIBLE MOVEMENT EVERY TIME
+                // yearlyPredictionChart
                 if (yearlyPredictionChart) {
-                    // Base value + larger random variation for clear visual change
-                    const varied2023 = full2023Count + Math.round(random(-10, 12));
-                    yearlyPredictionChart.data.datasets[0].data[3] = Math.max(50, varied2023);  // Prevent too low
+                    yearlyPredictionChart.data.datasets[0].data[3] = full2023Count;
                     yearlyPredictionChart.options.plugins.title.text = fullText;
                     yearlyPredictionChart.update('active');
                 }
 
-                // monthlyComparisonChart - DYNAMIC MOVEMENT
+                // monthlyComparisonChart
                 if (monthlyComparisonChart) {
                     const base2022 = [28,32,35,30,40,38,42,45,41,36,33,30];
                     const monthly2023 = base2022.map(v => {
@@ -227,7 +250,7 @@
                     monthlyComparisonChart.update('active');
                 }
 
-                // julDecChart - DYNAMIC MOVEMENT
+                // julDecChart
                 if (julDecChart) {
                     const baseJulDec2022 = [42,45,41,36,33,30];
                     const forecastJulDec = baseJulDec2022.map(v => {
