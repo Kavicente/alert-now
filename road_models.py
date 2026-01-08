@@ -127,9 +127,9 @@ except Exception as e:
 sarimax_pred = None
 try:
     sarimax_pred = joblib.load(os.path.join(os.path.dirname(__file__), 'training', 'Road Models', 
-                                          'SARIMAX ROAD', 'sarimax_pred', 'sarimax80_20.pkl'))
-    logger.info("sarimax80_20.pkl loaded successfully.")
+                                          'SARIMAX ROAD', 'sarimax_pred', 'sarimax70_15_15.pkl'))
+    logger.info("sarimax70_15_15.pkl loaded successfully.")
 except FileNotFoundError:
-    logger.error("sarimax80_20.pkl not found.")
+    logger.error("sarimax70_15_15.pkl not found.")
 except Exception as e:
-    logger.error(f"Error loading sarimax80_20.pkl: {e}")
+    logger.error(f"Error loading sarimax70_15_15.pkl: {e}")
