@@ -569,7 +569,7 @@
             
 
              // Update prediction display after submission
-            socket.on('barangay_sarimax_submitted', () => {
+            socket.on('barangay_sarima_submitted', () => {
                 fetch('/get_latest_prediction')
                     .then(r => r.json())
                     .then(data => updateChartsFromPrediction(data.prediction));
