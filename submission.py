@@ -63,7 +63,7 @@ def get_db_connection():
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
-
+'''
 def handle_barangay_response_submitted(data):
     logger.info(f"Barangay response received: {data}")
     data['timestamp'] = datetime.now(pytz.timezone('Asia/Manila')).strftime('%Y-%m-%d %H:%M:%S')
@@ -136,7 +136,7 @@ def handle_barangay_response_submitted(data):
     # === 3. Save to DB (only one column: prediction) ===
     try:
         conn = get_db_connection()
-        conn.execute('''
+        conn.execute(
             INSERT INTO barangay_response (
                 alert_id, road_accident_cause, road_accident_type, weather, 
                 road_condition, vehicle_type, driver_age, driver_gender, 
@@ -144,7 +144,7 @@ def handle_barangay_response_submitted(data):
                 alcohol_used, incident_hour, incident_weekday, barangay_clean,
                 prediction
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
+        , (
             extracted_data['alert_id'], extracted_data['road_accident_cause'],
             extracted_data['road_accident_type'], extracted_data['weather'],
             extracted_data['road_condition'], extracted_data['vehicle_type'],
@@ -259,7 +259,7 @@ def handle_barangay_arimax_submitted(data):
     # === 3. Save to DB (same as original) ===
     try:
         conn = get_db_connection()
-        conn.execute('''
+        conn.execute(
             INSERT INTO barangay_response (
                 alert_id, road_accident_cause, road_accident_type, weather, 
                 road_condition, vehicle_type, driver_age, driver_gender, 
@@ -267,7 +267,7 @@ def handle_barangay_arimax_submitted(data):
                 alcohol_used, incident_hour, incident_weekday, barangay_clean,
                 prediction
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
+        , (
             extracted_data['alert_id'], extracted_data['road_accident_cause'],
             extracted_data['road_accident_type'], extracted_data['weather'],
             extracted_data['road_condition'], extracted_data['vehicle_type'],
@@ -304,7 +304,7 @@ def handle_barangay_arimax_submitted(data):
     }, broadcast=True)
 
     logger.info(f"ARIMAX update sent → {arimax_full_text} | {arimax_monthly_text} | {arimax_jul_dec_text}")
-
+'''
 
 def handle_barangay_sarima_submitted(data):
     logger.info(f"Received Barangay ARIMAX response: {data}")
