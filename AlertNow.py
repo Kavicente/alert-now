@@ -55,7 +55,7 @@ from DILGDashboard import (dilg_dashboard, dilg_data, dilg_accounts, dilg_update
                            dilg_delete_all, dilg_warn_account, dilg_barangays, dilg_barangay_report, dilg_cdrrmo_report,
                            dilg_bfp_report, dilg_health_report, dilg_pnp_report)
 
-from submission import (handle_barangay_sarima_submitted,
+from submission import (handle_barangay_response_submitted, handle_barangay_arimax_submitted, handle_barangay_sarima_submitted,
                         handle_barangay_sarimax_submitted, handle_barangay_fire_submitted, handle_barangay_crime_submitted, handle_barangay_health_response,
                         handle_cdrrmo_response_submitted, handle_pnp_response_submitted, handle_pnp_fire_submitted,
                         handle_pnp_crime_submitted, handle_fire_response_submitted, handle_health_response, handle_hospital_response)
@@ -1057,7 +1057,7 @@ def get_latest_fire_prediction():
     conn.close()
     return jsonify({'prediction': result[0] if result else 'No fire prediction available'})
 
-'''
+
 @socketio.on('barangay_response')
 def barangay_arima_handler(data):
     handle_barangay_response_submitted(data) 
@@ -1066,7 +1066,7 @@ def barangay_arima_handler(data):
 @socketio.on('barangay_arimax_submitted')
 def barangay_arimax_handler(data):
     handle_barangay_arimax_submitted(data)
-'''
+
 @socketio.on('barangay_sarima_submitted')
 def barangay_sarima_handler(data):
     handle_barangay_sarima_submitted(data)
