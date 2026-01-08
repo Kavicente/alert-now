@@ -85,12 +85,12 @@ except Exception as e:
 sarima_22 = None
 try:
     sarima_22 = joblib.load(os.path.join(os.path.dirname(__file__), 'training', 'Road Models', 
-                                        'SARIMA ROAD', 'sarima_forecast', 'sarima_forecast_80_20.pkl'))
-    logger.info("sarima_forecast_80_20.pkl loaded successfully.")
+                                        'SARIMA ROAD', 'sarima_forecast', 'SARIMA_forecast_80_20.pkl'))
+    logger.info("SARIMA_forecast_80_20.pkl loaded successfully.")
 except FileNotFoundError:
-    logger.error("sarima_forecast_80_20.pkl not found.")
+    logger.error("SARIMA_forecast_80_20.pkl not found.")
 except Exception as e:
-    logger.error(f"Error loading sarima_forecast_80_20.pkl: {e}")
+    logger.error(f"Error loading SARIMA_forecast_80_20.pkl: {e}")
 
 sarima_pred = None
 try:
@@ -117,12 +117,12 @@ except Exception as e:
 sarimax_22 = None
 try:
     sarimax_22 = joblib.load(os.path.join(os.path.dirname(__file__), 'training', 'Road Models', 
-                                        'SARIMAX ROAD', 'sarimax_forecast', 'sarimax_forecast_70_15_15.pkl'))
-    logger.info("sarimax_forecast_70_15_15.pkl loaded successfully.")
+                                        'SARIMAX ROAD', 'sarimax_forecast', 'SARIMAX_forecast_70_15_15.pkl'))
+    logger.info("SARIMAX_forecast_70_15_15.pkl loaded successfully.")
 except FileNotFoundError:
-    logger.error("sarimax_forecast_70_15_15.pkl not found.")
+    logger.error("SARIMAX_forecast_70_15_15.pkl not found.")
 except Exception as e:
-    logger.error(f"Error loading sarimax_forecast_70_15_15.pkl: {e}")
+    logger.error(f"Error loading SARIMAX_forecast_70_15_15.pkl: {e}")
 
 sarimax_pred = None
 try:
