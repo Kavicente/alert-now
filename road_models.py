@@ -107,29 +107,29 @@ except Exception as e:
 sarimax_m = None
 try:
     sarimax_m = joblib.load(os.path.join(os.path.dirname(__file__), 'training', 'Road Models', 
-                                       'SARIMAX ROAD', 'sarimax_monthly', 'monthly_sarimax70_15_15.pkl'))
-    logger.info("monthly_sarimax70_15_15.pkl loaded successfully.")
+                                       'SARIMAX ROAD', 'sarimax_monthly', 'monthly_sarimax70_30.pkl'))
+    logger.info("monthly_sarimax70_30.pkl loaded successfully.")
 except FileNotFoundError:
-    logger.error("monthly_sarimax70_15_15.pkl not found.")
+    logger.error("monthly_sarimax70_30.pkl not found.")
 except Exception as e:
-    logger.error(f"Error loading monthly_sarimax70_15_15.pkl: {e}")
+    logger.error(f"Error loading monthly_sarimax70_30.pkl: {e}")
 
 sarimax_22 = None
 try:
     sarimax_22 = joblib.load(os.path.join(os.path.dirname(__file__), 'training', 'Road Models', 
-                                        'SARIMAX ROAD', 'sarimax_forecast', 'SARIMAX_forecast_70_15_15.pkl'))
-    logger.info("SARIMAX_forecast_70_15_15.pkl loaded successfully.")
+                                        'SARIMAX ROAD', 'sarimax_forecast', 'SARIMAX_forecast_70_30.pkl'))
+    logger.info("SARIMAX_forecast_70_30.pkl loaded successfully.")
 except FileNotFoundError:
-    logger.error("SARIMAX_forecast_70_15_15.pkl not found.")
+    logger.error("SARIMAX_forecast_70_30.pkl not found.")
 except Exception as e:
-    logger.error(f"Error loading SARIMAX_forecast_70_15_15.pkl: {e}")
+    logger.error(f"Error loading SARIMAX_forecast_70_30.pkl: {e}")
 
 sarimax_pred = None
 try:
     sarimax_pred = joblib.load(os.path.join(os.path.dirname(__file__), 'training', 'Road Models', 
-                                          'SARIMAX ROAD', 'sarimax_pred', 'sarimax70_15_15.pkl'))
-    logger.info("sarimax70_15_15.pkl loaded successfully.")
+                                          'SARIMAX ROAD', 'sarimax_pred', 'sarimax70_30.pkl'))
+    logger.info("sarimax70_30.pkl loaded successfully.")
 except FileNotFoundError:
-    logger.error("sarimax70_15_15.pkl not found.")
+    logger.error("sarimax70_30.pkl not found.")
 except Exception as e:
-    logger.error(f"Error loading sarimax70_15_15.pkl: {e}")
+    logger.error(f"Error loading sarimax70_30.pkl: {e}")
