@@ -241,7 +241,6 @@
                 monthly2023Count = Math.max(70, Math.min(180, monthly2023Count));
                 julDec2023Count = Math.max(50, Math.min(130, julDec2023Count));
 
-                // yearlyPredictionChart - NOW MOVES VISIBLY EVERY TIME
                 if (yearlyPredictionChart) {
                     yearlyPredictionChart.data.datasets[0].data[3] = full2023Count;
                     yearlyPredictionChart.options.plugins.title.text = fullText;
