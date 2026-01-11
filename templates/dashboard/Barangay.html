@@ -728,9 +728,9 @@
             
 
             // Primary listener for SARIMA updates (live, no refresh)
-            socket.on('update_sarimax_charts', updateRoadCharts);
+            socket.on('update_arima_charts', updateRoadCharts);
 
-            socket.on('update_prediction_charts', updateFireCharts);
+            socket.on('update_fire_arima_charts', updateFireCharts);
 
             socket.on('update_fire_arimax_charts', updateFireCharts);
 
@@ -837,13 +837,13 @@
 
                     // Choose correct emit event
                     const eventMap = {
-                        'Road Accident': 'barangay_sarimax_submitted',
+                        'Road Accident': 'barangay_response',
                         'Fire Incident': 'barangay_fire_submitted',
                         'Crime Incident': 'barangay_crime_submitted',
                         'Health Emergency': 'barangay_health_response'
                     };
 
-                    const socketEvent = eventMap[emergencyType] || 'barangay_sarimax_submitted';
+                    const socketEvent = eventMap[emergencyType] || 'barangay_response';
                     socket.emit(socketEvent, formData);
 
                     responseForm.style.display = 'none';
@@ -873,7 +873,7 @@
             
 
              // Update prediction display after submission
-            socket.on('barangay_sarimax_submitted', () => {
+            socket.on('barangay_response', () => {
                 fetch('/get_latest_prediction')
                     .then(r => r.json())
                     .then(data => updateChartsFromPrediction(data.prediction));

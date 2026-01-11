@@ -180,7 +180,7 @@ def handle_barangay_response_submitted(data):
     logger.info("Barangay response emitted (prediction hidden from UI)")
 
     # === 5. Broadcast both predictions live to all dashboards ===
-    emit('update_prediction_charts', {
+    emit('update_arima_charts', {
         'full_year': full_year_text,
         'monthly': monthly_text,
         'jul_dec': jul_dec_text
@@ -656,7 +656,7 @@ def handle_barangay_fire_submitted(data):
     logger.info("Barangay fire response emitted (prediction hidden from UI)")
 
     # === 5. Broadcast Fire predictions to all dashboards ===
-    emit('update_prediction_charts', {
+    emit('update_fire_arima_charts', {
         'fire_full': fire_full_text,
         'fire_monthly': fire_monthly_text,
         'fire_jul_dec': fire_jul_dec_text
