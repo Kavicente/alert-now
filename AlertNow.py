@@ -1,62 +1,111 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, session, send_file, make_response, flash
+
 from flask_socketio import SocketIO, emit, join_room
+
 import logging
+
 import ast
+
 import os
+
 import json
+
 import sqlite3
+
 import numpy as np
+
 import random
+
 from collections import Counter
+
 from datetime import datetime, timedelta
+
 import pytz
+
 import pandas as pd
+
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.compose import ColumnTransformer
+
+
 from sklearn.pipeline import Pipeline
+
 import uuid
+
 import random
+
+
 from road_models import (arima_pred, arima_22, arima_m,
                          arimax_pred, arimax_22, arimax_m,
                          sarima_pred, sarima_22, sarima_m,
                          sarimax_pred, sarimax_22, sarimax_m)
+
+from fire_models import(f_arima_22, f_arima_m, f_arima_pred,
+                f_arimax_22, f_arimax_m, f_arimax_pred,
+                f_sarima_22, f_sarima_m, f_sarima_pred,
+                f_sarimax_22, f_sarimax_m, f_sarimax_pred)
+
+
 from models import (road_accident_predictor, 
                     fire_accident_predictor, crime_predictor, 
-                    health_predictor, birth_predictor,
-                    f_arima_m, f_arima_22, f_arima_pred)
+                    health_predictor, birth_predictor)
+
 from AgencyIn import send_dilg_password
+
 from SignUpType import download_apk_folder, generate_qr
+
 from BarangayDashboard import (get_barangay_stats, get_latest_alert, get_the_stats, get_new_alert, 
+                               
                                get_barangay_emergency_types, get_barangay_responded_count, emit_emergency_types_update)
+
 from CDRRMODashboard import (get_cdrrmo_stats, get_latest_alert, get_the_cdrrmo_stats, get_cdrrmo_new_alert, 
                              get_cdrrmo_alerts_per_month, get_cdrrmo_responded_count, emit_cdrrmo_alerts_per_month_update)
+
 from PNPDashboard import (get_pnp_stats, get_latest_alert, get_the_pnp_stats, get_pnp_new_alert, get_pnp_alerts_per_month, 
                           get_pnp_responded_count, emit_pnp_alerts_per_month_update)
+
 from BFPDashboard import (get_bfp_stats, get_latest_alert, get_the_stat_bfp, get_bfp_alerts_per_month, 
                           get_bfp_responded_count, emit_bfp_alerts_per_month_update)
+
 from HealthDashboard import get_health_stats, get_latest_alert
+
 from HospitalDashboard import get_hospital_stats, get_latest_alert
+
 from BarangayCharts import (barangay_charts, barangay_charts_data, get_barangay_chart_data, barangay_fire_charts_data, 
                             barangay_health_charts_data, get_barangay_health_chart_data, barangay_crime_charts_data)
+
 from CDRRMOCharts import cdrrmo_charts, cdrrmo_charts_data, get_cdrrmo_chart_data
+
 from PNPCharts import pnp_charts, pnp_charts_data, get_pnp_chart_data, pnp_fire_charts_data, pnp_crime_charts_data
+
 from BFPCharts import bfp_charts, bfp_charts_data, get_bfp_chart_data
+
 from HealthCharts import health_charts, health_charts_data
+
 from HospitalCharts import hospital_charts, hospital_charts_data
+
 from dataset import road_accident_df, fire_incident_df, health_emergencies_df, crime_df
+
 import smtplib
+
 import joblib
+
 from email.mime.text import MIMEText
+
 from email.mime.multipart import MIMEMultipart
+
 from google.oauth2 import service_account
+
 import secrets
+
 from PassReset import pass_reset
+
 from DILGDashboard import (dilg_dashboard, dilg_data, dilg_accounts, dilg_update_account, dilg_delete_account, 
                            dilg_delete_all, dilg_warn_account, dilg_barangays, dilg_barangay_report, dilg_cdrrmo_report,
                            dilg_bfp_report, dilg_health_report, dilg_pnp_report)
 
 from submission import (handle_barangay_response_submitted, handle_barangay_arimax_submitted, handle_barangay_sarima_submitted,
-                        handle_barangay_sarimax_submitted, handle_barangay_fire_submitted, handle_barangay_crime_submitted, handle_barangay_health_response,
+                        handle_barangay_sarimax_submitted, handle_barangay_fire_submitted, handle_barangay_fire_arimax, handle_barangay_fire_sarima,
+                        handle_barangay_fire_sarimax, handle_barangay_crime_submitted, handle_barangay_health_response,
                         handle_cdrrmo_response_submitted, handle_pnp_response_submitted, handle_pnp_fire_submitted,
                         handle_pnp_crime_submitted, handle_fire_response_submitted, handle_health_response, handle_hospital_response)
 
@@ -1079,6 +1128,18 @@ def barangay_sarimax_handler(data):
 @socketio.on('barangay_fire_submitted')
 def barangay_fire_handler(data):
     handle_barangay_fire_submitted(data)
+
+@socketio.on('barangay_fire_arimax')
+def barangay_fire_arimax_handler(data):
+    handle_barangay_fire_arimax(data)
+    
+@socketio.on('barangay_fire_sarima')
+def barangay_fire_sarima_handler(data):
+    handle_barangay_fire_sarima(data)
+    
+@socketio.on('barangay_fire_sarimax')
+def barangay_fire_sarimax_handler(data):
+    handle_barangay_fire_sarimax(data)
 
 @socketio.on('barangay_crime_submitted')
 def barangay_crime_handler(data):

@@ -10,10 +10,15 @@ from road_models import (arima_pred, arima_22, arima_m,
                          arimax_pred, arimax_22, arimax_m,
                          sarima_pred, sarima_22, sarima_m,
                          sarimax_pred, sarimax_22, sarimax_m)
+
 from models import (road_accident_predictor, 
                     fire_accident_predictor, crime_predictor, 
-                    health_predictor, birth_predictor,
-                    f_arima_m, f_arima_22, f_arima_pred)
+                    health_predictor, birth_predictor)
+
+from fire_models import(f_arima_22, f_arima_m, f_arima_pred,
+                f_arimax_22, f_arimax_m, f_arimax_pred,
+                f_sarima_22, f_sarima_m, f_sarima_pred,
+                f_sarimax_22, f_sarimax_m, f_sarimax_pred)
 import os
 import numpy as np
 import pandas as pd
@@ -608,8 +613,8 @@ def handle_barangay_fire_submitted(data):
         logger.error(f"Fire ARIMA Prediction failed: {e}")
 
     # === COMBINE FOR DB ===
-    combined_fire_prediction = f"{fire_full_text} | {fire_monthly_text} | {fire_jul_dec_text}"
-    extracted_data['prediction'] = combined_fire_prediction
+    combined_ARIMA_fire_prediction = f"{fire_full_text} | {fire_monthly_text} | {fire_jul_dec_text}"
+    extracted_data['prediction'] = combined_ARIMA_fire_prediction
 
     # === 3. Save to DB (INSERT with prediction) ===
     try:
@@ -635,7 +640,7 @@ def handle_barangay_fire_submitted(data):
             extracted_data['prediction']
         ))
         conn.commit()
-        logger.info(f"Fire response + prediction saved: {combined_fire_prediction}")
+        logger.info(f"Fire response + prediction saved: {combined_ARIMA_fire_prediction}")
 
     except Exception as e:
         logger.error(f"DB Error: {e}")
@@ -659,7 +664,344 @@ def handle_barangay_fire_submitted(data):
 
     logger.info(f"Fire prediction broadcasted → {fire_full_text} | {fire_monthly_text} | {fire_jul_dec_text}")
 
+def handle_barangay_fire_arimax(data):
+    logger.info(f"Received Barangay fire response: {data}")
+    data['timestamp'] = datetime.now(pytz.timezone('Asia/Manila')).strftime('%Y-%m-%d %H:%M:%S')
 
+    # === 1. Extract data (same as road accident) ===
+    field_mappings = {
+        'alert_id': {'db_column': 'alert_id', 'default': str(uuid.uuid4()), 'type': str},
+        'fire_cause': {'db_column': 'fire_cause', 'default': 'Undetermined fire cause (on pending investigation)', 'type': str},
+        'occupancy_type': {'db_column': 'occupancy_type', 'default': 'Residential', 'type': str},
+        'fire_class': {'db_column': 'fire_class', 'default': 'CLASS A', 'type': str},
+        'lat': {'db_column': 'lat', 'default': 0.0, 'type': float},
+        'lon': {'db_column': 'lon', 'default': 0.0, 'type': float},
+        'barangay': {'db_column': 'barangay', 'default': 'Unknown', 'type': str},
+        'emergency_type': {'db_column': 'emergency_type', 'default': 'Fire Incident', 'type': str}
+    }
+
+    extracted_data = {}
+    for key, mapping in field_mappings.items():
+        val = data.get(key)
+        extracted_data[mapping['db_column']] = mapping['type'](val) if val is not None else mapping['default']
+
+    now = datetime.now(pytz.timezone('Asia/Manila'))
+    extracted_data['timestamp'] = now.strftime('%Y-%m-%d %H:%M:%S')
+    extracted_data['responded'] = True
+
+    # === 2. Generate FIRE Predictions with Random Variation ===
+    firex_full_text = "Fire 2023 Full Year: Forecast unavailable"
+    firex_monthly_text = "Fire 2023 Monthly: Forecast unavailable"
+    firex_jul_dec_text = "Fire July-Dec 2023: Forecast unavailable"
+
+    try:
+        # Full Year (f_arima_pred)
+        if f_arimax_pred is not None:
+            forecast = f_arimax_pred.predict(n_periods=1)
+            predicted = float(forecast.iloc[0])
+            prob = (predicted / 100) * 100
+            prob += random.uniform(-15.0, 18.0)
+            prob = max(20, min(95, prob))
+            firex_full_text = f"Fire 2023 Full Year: {prob:.1f}% Risk"
+
+        # Monthly (f_arima_m)
+        if f_arimax_m is not None:
+            forecast = f_arimax_m.predict(n_periods=1)
+            predicted = float(forecast.iloc[0])
+            prob = (predicted / 100) * 100
+            prob += random.uniform(-18.0, 20.0)
+            prob = max(25, min(94, prob))
+            firex_monthly_text = f"Fire 2023 Monthly: {prob:.1f}% Risk"
+
+        # July-Dec (f_arima_22)
+        if f_arimax_22 is not None:
+            forecast = f_arimax_22.predict(n_periods=1)
+            predicted = float(forecast.iloc[0])
+            prob = (predicted / 60) * 100
+            prob += random.uniform(-20.0, 22.0)
+            prob = max(30, min(92, prob))
+            firex_jul_dec_text = f"Fire July-Dec 2023: {prob:.1f}% Risk"
+
+    except Exception as e:
+        logger.error(f"Fire ARIMA Prediction failed: {e}")
+
+    # === COMBINE FOR DB ===
+    combined_ARIMAX_fire_prediction = f"{firex_full_text} | {firex_monthly_text} | {firex_jul_dec_text}"
+    extracted_data['prediction'] = combined_ARIMAX_fire_prediction
+
+    # === 3. Save to DB (INSERT with prediction) ===
+    try:
+        conn = get_db_connection()
+        conn.execute('''
+            INSERT INTO barangay_fire_response (
+                alert_id, fire_cause, occupancy_type, fire_class,
+                lat, lon, barangay, emergency_type, timestamp, responded,
+                barangay_clean, prediction
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            extracted_data['alert_id'],
+            extracted_data['fire_cause'],
+            extracted_data['occupancy_type'],
+            extracted_data['fire_class'],
+            extracted_data['lat'],
+            extracted_data['lon'],
+            extracted_data['barangay'],
+            extracted_data['emergency_type'],
+            extracted_data['timestamp'],
+            extracted_data['responded'],
+            extracted_data['barangay'].lower().replace(' ', '_') if extracted_data['barangay'] else 'unknown',
+            extracted_data['prediction']
+        ))
+        conn.commit()
+        logger.info(f"Fire response + prediction saved: {combined_ARIMAX_fire_prediction}")
+
+    except Exception as e:
+        logger.error(f"DB Error: {e}")
+        if 'conn' in locals():
+            conn.rollback()
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+    # === 4. Emit response (no prediction in alert card) ===
+    barangay_room = f"barangay_{data.get('barangay', 'unknown').lower()}"
+    emit('barangay_fire_arimax', data, room=barangay_room)
+    logger.info("Barangay fire response emitted (prediction hidden from UI)")
+
+    # === 5. Broadcast Fire predictions to all dashboards ===
+    emit('update_fire_arimax_charts', {
+        'fire_full': firex_full_text,
+        'fire_monthly': firex_monthly_text,
+        'fire_jul_dec': firex_jul_dec_text
+    }, broadcast=True)
+
+    logger.info(f"Fire prediction broadcasted → {firex_full_text} | {firex_monthly_text} | {firex_jul_dec_text}")
+    
+def handle_barangay_fire_sarima(data):
+    logger.info(f"Received Barangay fire response: {data}")
+    data['timestamp'] = datetime.now(pytz.timezone('Asia/Manila')).strftime('%Y-%m-%d %H:%M:%S')
+
+    # === 1. Extract data (same as road accident) ===
+    field_mappings = {
+        'alert_id': {'db_column': 'alert_id', 'default': str(uuid.uuid4()), 'type': str},
+        'fire_cause': {'db_column': 'fire_cause', 'default': 'Undetermined fire cause (on pending investigation)', 'type': str},
+        'occupancy_type': {'db_column': 'occupancy_type', 'default': 'Residential', 'type': str},
+        'fire_class': {'db_column': 'fire_class', 'default': 'CLASS A', 'type': str},
+        'lat': {'db_column': 'lat', 'default': 0.0, 'type': float},
+        'lon': {'db_column': 'lon', 'default': 0.0, 'type': float},
+        'barangay': {'db_column': 'barangay', 'default': 'Unknown', 'type': str},
+        'emergency_type': {'db_column': 'emergency_type', 'default': 'Fire Incident', 'type': str}
+    }
+
+    extracted_data = {}
+    for key, mapping in field_mappings.items():
+        val = data.get(key)
+        extracted_data[mapping['db_column']] = mapping['type'](val) if val is not None else mapping['default']
+
+    now = datetime.now(pytz.timezone('Asia/Manila'))
+    extracted_data['timestamp'] = now.strftime('%Y-%m-%d %H:%M:%S')
+    extracted_data['responded'] = True
+
+    # === 2. Generate FIRE Predictions with Random Variation ===
+    sarima_fire_full_text = "Fire 2023 Full Year: Forecast unavailable"
+    sarima_fire_monthly_text = "Fire 2023 Monthly: Forecast unavailable"
+    sarima_fire_jul_dec_text = "Fire July-Dec 2023: Forecast unavailable"
+
+    try:
+        # Full Year (f_arima_pred)
+        if f_sarima_pred is not None:
+            forecast = f_sarima_pred.predict(n_periods=1)
+            predicted = float(forecast.iloc[0])
+            prob = (predicted / 100) * 100
+            prob += random.uniform(-15.0, 18.0)
+            prob = max(20, min(95, prob))
+            sarima_fire_full_text = f"Fire 2023 Full Year: {prob:.1f}% Risk"
+
+        # Monthly (f_arima_m)
+        if f_sarima_m is not None:
+            forecast = f_arimax_m.predict(n_periods=1)
+            predicted = float(forecast.iloc[0])
+            prob = (predicted / 100) * 100
+            prob += random.uniform(-18.0, 20.0)
+            prob = max(25, min(94, prob))
+            sarima_fire_monthly_text = f"Fire 2023 Monthly: {prob:.1f}% Risk"
+
+        # July-Dec (f_arima_22)
+        if f_sarima_22 is not None:
+            forecast = f_sarima_22.predict(n_periods=1)
+            predicted = float(forecast.iloc[0])
+            prob = (predicted / 60) * 100
+            prob += random.uniform(-20.0, 22.0)
+            prob = max(30, min(92, prob))
+            sarima_fire_jul_dec_text = f"Fire July-Dec 2023: {prob:.1f}% Risk"
+
+    except Exception as e:
+        logger.error(f"Fire ARIMA Prediction failed: {e}")
+
+    # === COMBINE FOR DB ===
+    combined_SARIMA_fire_prediction = f"{sarima_fire_full_text} | {sarima_fire_monthly_text} | {sarima_fire_jul_dec_text}"
+    extracted_data['prediction'] = combined_SARIMA_fire_prediction
+
+    # === 3. Save to DB (INSERT with prediction) ===
+    try:
+        conn = get_db_connection()
+        conn.execute('''
+            INSERT INTO barangay_fire_response (
+                alert_id, fire_cause, occupancy_type, fire_class,
+                lat, lon, barangay, emergency_type, timestamp, responded,
+                barangay_clean, prediction
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            extracted_data['alert_id'],
+            extracted_data['fire_cause'],
+            extracted_data['occupancy_type'],
+            extracted_data['fire_class'],
+            extracted_data['lat'],
+            extracted_data['lon'],
+            extracted_data['barangay'],
+            extracted_data['emergency_type'],
+            extracted_data['timestamp'],
+            extracted_data['responded'],
+            extracted_data['barangay'].lower().replace(' ', '_') if extracted_data['barangay'] else 'unknown',
+            extracted_data['prediction']
+        ))
+        conn.commit()
+        logger.info(f"Fire response + prediction saved: {combined_SARIMA_fire_prediction}")
+
+    except Exception as e:
+        logger.error(f"DB Error: {e}")
+        if 'conn' in locals():
+            conn.rollback()
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+    # === 4. Emit response (no prediction in alert card) ===
+    barangay_room = f"barangay_{data.get('barangay', 'unknown').lower()}"
+    emit('barangay_fire_sarima', data, room=barangay_room)
+    logger.info("Barangay fire response emitted (prediction hidden from UI)")
+
+    # === 5. Broadcast Fire predictions to all dashboards ===
+    emit('update_fire_sarima_charts', {
+        'fire_full': sarima_fire_full_text,
+        'fire_monthly': sarima_fire_monthly_text,
+        'fire_jul_dec': sarima_fire_jul_dec_text
+    }, broadcast=True)
+
+    logger.info(f"Fire prediction broadcasted → {sarima_fire_full_text} | {sarima_fire_monthly_text} | {sarima_fire_jul_dec_text}")
+    
+def handle_barangay_fire_sarimax(data):
+    logger.info(f"Received Barangay fire response: {data}")
+    data['timestamp'] = datetime.now(pytz.timezone('Asia/Manila')).strftime('%Y-%m-%d %H:%M:%S')
+
+    # === 1. Extract data (same as road accident) ===
+    field_mappings = {
+        'alert_id': {'db_column': 'alert_id', 'default': str(uuid.uuid4()), 'type': str},
+        'fire_cause': {'db_column': 'fire_cause', 'default': 'Undetermined fire cause (on pending investigation)', 'type': str},
+        'occupancy_type': {'db_column': 'occupancy_type', 'default': 'Residential', 'type': str},
+        'fire_class': {'db_column': 'fire_class', 'default': 'CLASS A', 'type': str},
+        'lat': {'db_column': 'lat', 'default': 0.0, 'type': float},
+        'lon': {'db_column': 'lon', 'default': 0.0, 'type': float},
+        'barangay': {'db_column': 'barangay', 'default': 'Unknown', 'type': str},
+        'emergency_type': {'db_column': 'emergency_type', 'default': 'Fire Incident', 'type': str}
+    }
+
+    extracted_data = {}
+    for key, mapping in field_mappings.items():
+        val = data.get(key)
+        extracted_data[mapping['db_column']] = mapping['type'](val) if val is not None else mapping['default']
+
+    now = datetime.now(pytz.timezone('Asia/Manila'))
+    extracted_data['timestamp'] = now.strftime('%Y-%m-%d %H:%M:%S')
+    extracted_data['responded'] = True
+
+    # === 2. Generate FIRE Predictions with Random Variation ===
+    sarimax_fire_full_text = "Fire 2023 Full Year: Forecast unavailable"
+    sarimax_fire_monthly_text = "Fire 2023 Monthly: Forecast unavailable"
+    sarimax_fire_jul_dec_text = "Fire July-Dec 2023: Forecast unavailable"
+
+    try:
+        # Full Year (f_arima_pred)
+        if f_sarimax_pred is not None:
+            forecast = f_sarimax_pred.predict(n_periods=1)
+            predicted = float(forecast.iloc[0])
+            prob = (predicted / 100) * 100
+            prob += random.uniform(-15.0, 18.0)
+            prob = max(20, min(95, prob))
+            sarimax_fire_full_text = f"Fire 2023 Full Year: {prob:.1f}% Risk"
+
+        # Monthly (f_arima_m)
+        if f_sarimax_m is not None:
+            forecast = f_arimax_m.predict(n_periods=1)
+            predicted = float(forecast.iloc[0])
+            prob = (predicted / 100) * 100
+            prob += random.uniform(-18.0, 20.0)
+            prob = max(25, min(94, prob))
+            sarimax_fire_monthly_text = f"Fire 2023 Monthly: {prob:.1f}% Risk"
+
+        # July-Dec (f_arima_22)
+        if f_sarimax_22 is not None:
+            forecast = f_sarimax_22.predict(n_periods=1)
+            predicted = float(forecast.iloc[0])
+            prob = (predicted / 60) * 100
+            prob += random.uniform(-20.0, 22.0)
+            prob = max(30, min(92, prob))
+            sarimax_fire_jul_dec_text = f"Fire July-Dec 2023: {prob:.1f}% Risk"
+
+    except Exception as e:
+        logger.error(f"Fire ARIMA Prediction failed: {e}")
+
+    # === COMBINE FOR DB ===
+    combined_SARIMAX_fire_prediction = f"{sarimax_fire_full_text} | {sarimax_fire_monthly_text} | {sarimax_fire_jul_dec_text}"
+    extracted_data['prediction'] = combined_SARIMAX_fire_prediction
+
+    # === 3. Save to DB (INSERT with prediction) ===
+    try:
+        conn = get_db_connection()
+        conn.execute('''
+            INSERT INTO barangay_fire_response (
+                alert_id, fire_cause, occupancy_type, fire_class,
+                lat, lon, barangay, emergency_type, timestamp, responded,
+                barangay_clean, prediction
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            extracted_data['alert_id'],
+            extracted_data['fire_cause'],
+            extracted_data['occupancy_type'],
+            extracted_data['fire_class'],
+            extracted_data['lat'],
+            extracted_data['lon'],
+            extracted_data['barangay'],
+            extracted_data['emergency_type'],
+            extracted_data['timestamp'],
+            extracted_data['responded'],
+            extracted_data['barangay'].lower().replace(' ', '_') if extracted_data['barangay'] else 'unknown',
+            extracted_data['prediction']
+        ))
+        conn.commit()
+        logger.info(f"Fire response + prediction saved: {combined_SARIMAX_fire_prediction}")
+
+    except Exception as e:
+        logger.error(f"DB Error: {e}")
+        if 'conn' in locals():
+            conn.rollback()
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+    # === 4. Emit response (no prediction in alert card) ===
+    barangay_room = f"barangay_{data.get('barangay', 'unknown').lower()}"
+    emit('barangay_fire_sarima', data, room=barangay_room)
+    logger.info("Barangay fire response emitted (prediction hidden from UI)")
+
+    # === 5. Broadcast Fire predictions to all dashboards ===
+    emit('update_fire_sarimax_charts', {
+        'fire_full': sarimax_fire_full_text,
+        'fire_monthly': sarimax_fire_monthly_text,
+        'fire_jul_dec': sarimax_fire_jul_dec_text
+    }, broadcast=True)
+
+    logger.info(f"Fire prediction broadcasted → {sarimax_fire_full_text} | {sarimax_fire_monthly_text} | {sarimax_fire_jul_dec_text}")
 def handle_barangay_crime_submitted(data):
     logger.info(f"Received Barangay crime response: {data}")
     data['timestamp'] = datetime.now(pytz.timezone('Asia/Manila')).strftime('%Y-%m-%d %H:%M:%S')
