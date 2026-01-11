@@ -55,6 +55,8 @@ training/Fire Models/FIRE SARIMAX/fire_sarimax_pred/fire_sarimax_70_15_15.pkl
 training/Fire Models/FIRE SARIMAX/fire_sarimax_pred/fire_sarimax_70_30.pkl
 training/Fire Models/FIRE SARIMAX/fire_sarimax_pred/fire_sarimax_80_20.pkl
 
+AgencyIn.py
+
 models/**/*.pkl
 *.pkl
 
