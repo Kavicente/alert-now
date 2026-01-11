@@ -4,6 +4,8 @@
 
 # More specific patterns for your project structure
 training/**/*.pkl
+training/Fire Models/FIRE SARIMAX/fire_sarimax_pred/fire_sarimax_70_15_15.pkl
+training/Fire Models/FIRE SARIMAX/fire_sarimax_pred/fire_sarimax_70_30.pkl
 models/**/*.pkl
 *.pkl
 
