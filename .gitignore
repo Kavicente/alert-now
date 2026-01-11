@@ -1,0 +1,34 @@
+# Ignore large pickled model files (they are too big for regular Git)
+*.pkl
+!*.pkl  # This line is not needed, just showing you can selectively unignore if needed
+
+# More specific patterns for your project structure
+training/**/*.pkl
+models/**/*.pkl
+*.pkl
+
+# Common Python ignores
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# macOS junk
+.DS_Store
+
+# Editor directories
+.vscode/
+.idea/
+
+# Logs and temp files
+*.log
+*.tmp
